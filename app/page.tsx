@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { features } from "./features";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
+      
+      {/* Navigation */}
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
         <div className="container max-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -93,44 +96,7 @@ export default function Home() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-            {[
-              {
-                icon: "📖",
-                title: "Expert Summaries",
-                desc: "Professional summaries capturing key insights from each book",
-                color: "indigo",
-              },
-              {
-                icon: "🎧",
-                title: "Audio Narration",
-                desc: "Listen on-the-go with high-quality AI-powered audio",
-                color: "purple",
-              },
-              {
-                icon: "⚡",
-                title: "Save Hours",
-                desc: "Learn in 15 minutes what takes hours to read",
-                color: "pink",
-              },
-              {
-                icon: "💡",
-                title: "Key Insights",
-                desc: "Action able takeaways highlighted for quick reference",
-                color: "indigo",
-              },
-              {
-                icon: "📱",
-                title: "Any Device",
-                desc: "Seamless experience across web, mobile, and tablet",
-                color: "purple",
-              },
-              {
-                icon: "⭐",
-                title: "Best Selection",
-                desc: "Curated collection of top-rated bestsellers",
-                color: "pink",
-              },
-            ].map((feature, i) => (
+            {features.map((feature, i) => (
               <div
                 key={i}
                 className={`p-8 rounded-2xl border-2 border-gray-100 hover:border-${feature.color}-200 hover:shadow-xl transition-all duration-300`}
