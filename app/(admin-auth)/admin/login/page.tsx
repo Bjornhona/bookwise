@@ -33,8 +33,8 @@ export default function AdminLoginPage() {
       // Redireact to admin dashboard after successfully login
       router.push("/admin/dashboard");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setLoading(false);
     }
