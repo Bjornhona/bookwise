@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://bookwise-lemon-one.vercel.app/"),
   title: "BookWise",
   description: "BookWise is an AI-powered platform for summarizing books",
   icons: {
