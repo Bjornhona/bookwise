@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-interface Category {
+export interface Category {
   id: number;
   name: string;
   slug: string;
@@ -23,23 +23,55 @@ const CategoriesPage = () => {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch("/api/admin/categories");
-        if (response.ok) {
-          const data = await response.json();
-          // console.log("Categories data:", data);
-          setCategories(data);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
-        setLoading(false);
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/admin/categories");
+      if (response.ok) {
+        const data = await response.json();
+        // console.log("Categories data:", data);
+        setCategories(data);
       }
-    };
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch categories", error);
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchCategories();
   }, []);
+
+  async function handleDelete(id: number, name: string) {
+    if (
+      !confirm(
+        `Are your sure you want to delete "${name}"? This action cannot be undone`,
+      )
+    ) {
+      return;
+    }
+    setDeleting(id);
+    try {
+      const response = await fetch(`/api/admin/categories/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to delete category");
+        setDeleting(null);
+        return;
+      }
+
+      toast.success("Category deleted successfully");
+      fetchCategories();
+    } catch (error) {
+      toast.error("An error occurred while deleting the category");
+    } finally {
+      setDeleting(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -159,8 +191,14 @@ const CategoriesPage = () => {
                         >
                           Edit
                         </Link>
-                        <button className="text-red-600 hover:text-red-900 font-semibold text-sm disabled:opacity-50">
-                          Delete
+                        <button
+                          onClick={() =>
+                            handleDelete(category.id, category.name)
+                          }
+                          disabled={deleting === category.id}
+                          className="text-red-600 hover:text-red-900 font-semibold text-sm disabled:opacity-50"
+                        >
+                          {deleting === category.id ? "Deleting..." : "Delete"}
                         </button>
                       </div>
                     </td>
@@ -176,15 +214,24 @@ const CategoriesPage = () => {
       <div className="mt-6 grid grid-cols-3 gap-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="text-sm text-gray-600 mb-1">Total Categories</div>
-          <div className="text-3xl font-bold text-gray-900">{categories.length}</div>
+          <div className="text-3xl font-bold text-gray-900">
+            {categories.length}
+          </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="text-sm text-gray-600 mb-1">Active Categories</div>
-          <div className="text-3xl font-bold text-green-600">{categories.filter((category) => category.isActive).length}</div>
+          <div className="text-3xl font-bold text-green-600">
+            {categories.filter((category) => category.isActive).length}
+          </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="text-sm text-gray-600 mb-1">Total Books</div>
-          <div className="text-3xl font-bold text-indigo-600">{categories.reduce((sum, category) => sum + (category._count?.books || 0), 0)}</div>
+          <div className="text-3xl font-bold text-indigo-600">
+            {categories.reduce(
+              (sum, category) => sum + (category._count?.books || 0),
+              0,
+            )}
+          </div>
         </div>
       </div>
     </div>
