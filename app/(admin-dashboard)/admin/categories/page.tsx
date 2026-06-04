@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 export interface Category {
@@ -17,29 +16,40 @@ export interface Category {
   };
 }
 
+async function fetchCategories(): Promise<Category[]> {
+  const response = await fetch("/api/admin/categories");
+  if (!response.ok) {
+    throw new Error("Failed to fetch categories");
+  }
+  return response.json();
+}
+
 const CategoriesPage = () => {
-  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/admin/categories");
-      if (response.ok) {
-        const data = await response.json();
-        // console.log("Categories data:", data);
-        setCategories(data);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch categories", error);
-      setLoading(false);
-    }
-  };
-  
   useEffect(() => {
-    fetchCategories();
+    let cancelled = false;
+    async function loadCategories() {
+      try {
+        const data = await fetchCategories();
+        if (!cancelled) {
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+        toast.error("Failed to fetch categories");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+    void loadCategories();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleDelete(id: number, name: string) {
@@ -65,7 +75,8 @@ const CategoriesPage = () => {
       }
 
       toast.success("Category deleted successfully");
-      fetchCategories();
+      const updatedCategories = await fetchCategories();
+      setCategories(updatedCategories);
     } catch (error) {
       toast.error("An error occurred while deleting the category");
     } finally {
